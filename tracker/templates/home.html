@@ -4,8 +4,43 @@
   TGS LATAM
 {% endblock %}
 
-
 {% block content %}
-  <h1>Suriname Tracking </h1> 
-  
+
+<div class="container mt-4">
+  <h1>Projects</h1>
+  <hr> <!-- Add a line -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Client</th>
+          <th>Manager</th>
+          <th>Phase 1</th>
+          <th>Phase 1 Repro</th>
+          <th>Phase 2</th>
+          <th>Phase 3 Repro</th>
+          <th>Phase 4</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in project_list %}
+          <tr>
+            <td class="text-center">{{ project.client }}</td>
+            <td class="text-center">{{ project.manager }}</td>
+            <td{% if project.Phase_1 == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_1 }}</td>
+            <td{% if project.Phase_1_Repro == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_1_Repro }}</td>
+            <td{% if project.Phase_2 == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_2 }}</td>
+            <td{% if project.Phase_3_Repro == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_3_Repro }}</td>
+            <td{% if project.Phase_4 == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_4 }}</td>
+            <td class="text-center">
+              <a href="#" class="btn btn-sm btn-primary">Update</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 {% endblock %}
