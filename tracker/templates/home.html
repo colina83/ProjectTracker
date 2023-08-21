@@ -34,7 +34,7 @@
             <td{% if project.Phase_3_Repro == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_3_Repro }}</td>
             <td{% if project.Phase_4 == '-' %} style="background-color: rgba(255, 0, 0, 0.5);"{% endif %} class="text-center">{{ project.Phase_4 }}</td>
             <td class="text-center">
-              <a href="#" class="btn btn-sm btn-primary">Update</a>
+              <a href="{% url 'update_status' %}" class="btn btn-sm btn-primary">Update</a>
             </td>
           </tr>
         {% endfor %}

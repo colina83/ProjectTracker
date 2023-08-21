@@ -4,54 +4,66 @@ from .models import Manager, Company, Project, Product, Status
 from django.db.models import Max
 from .helper import all_table
 import pandas as pd
+from .forms import StatusUpdateForm
+from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
+from collections import defaultdict
+
 def home(request):
     if request.method == 'GET':
         status = Status.objects.all().order_by('date')
-        data = []
-          
-        for project_status in status:
-            data.append({
+        data = [
+            {
                 "client": project_status.company.name,
                 "manager": project_status.manager_name,
                 "project_name": project_status.project.name,
                 "status": project_status.status,
                 "date": project_status.date,
-            })
-
+            }
+            for project_status in status
+        ]
+        
         df = pd.DataFrame(data)
-        # Sort the DataFrame by date in descending order
-        df_sorted = df.sort_values('date', ascending=False)
-
-        # Drop duplicates based on client, manager, and project_name, keeping the first occurrence (most recent)
+        df_sorted = df.sort_values(['client', 'manager', 'project_name', 'date'], ascending=[True, True, True, False])
+        
         df_unique = df_sorted.drop_duplicates(['client', 'manager', 'project_name'], keep='first')
-
-        # Pivot the DataFrame to long format with project name in columns
-        df_long = pd.pivot_table(df_unique, values='status', index=['client', 'manager', 'date'], columns='project_name', aggfunc='first')
-
-        # Reset the index to make client, manager, and date as separate columns
-        df_long = df_long.reset_index()
-        columns_to_drop = ['date']
-        df_long = df_long.drop(columns=columns_to_drop)
-        df_long = df_long.fillna('-')
-        project_df = df_long .reset_index(drop=True)   
-        project_dict = project_df.to_dict(orient='records')
         
-        for item in project_dict:
-            for key in list(item.keys()):
-                new_key = key.replace(" ", "_")
-                if new_key != key:
-                    item[new_key] = item.pop(key)
+        pivot_table = pd.pivot_table(df_unique, values='status', index=['client', 'manager'], columns='project_name', aggfunc=lambda x: x.iloc[0])
         
-        print(project_dict)
+        pivot_table = pivot_table.applymap(lambda x: '-' if pd.isnull(x) else x)
+        
+        project_dict_list = pivot_table.reset_index().to_dict(orient='records')
+        
+        final_project_dict_list = []
+        for project_dict in project_dict_list:
+            new_project_dict = {k.replace(" ", "_"): v for k, v in project_dict.items()}
+            final_project_dict_list.append(new_project_dict)
+        
+        print(final_project_dict_list)
         
         context = {
-        'project_list': project_dict,
-        }    
+            'project_list': final_project_dict_list,
+        }
         
-        
-        
-        
-    return render(request,'home.html', context)
+        return render(request, 'home.html', context)
+
+
+def update_status(request):
+    if request.method == 'GET':
+        form = StatusUpdateForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'update_status.html', context)
+    else:
+        form = StatusUpdateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Redirect back to the home page after updating
+        else:
+            context = {
+                'form': form,
+            }
+            return render(request, 'update_status.html', context)
     
